@@ -19,25 +19,12 @@ function deepClone(target, hash = new WeakMap()) {
         return hash.get(target)
     }
 
-    // 创建新对象
-    // 根据 target 的构造函数创建一个新的实例
-    // 这样可以保证新对象的原型链和原对象一致
-    // 例如：[] 的 constructor 是 Array，{} 的 constructor 是 Object
-    let cloneTarget;
-    try {
-        // 使用 target.constructor 创建新实例
-        // 注意：某些对象（如通过 Object.create(null) 创建的）可能没有 constructor
-        cloneTarget = new target.constructor();
-    } catch (error) {
-        // 如果创建失败（比如 constructor 不存在或不是构造函数），回退到创建一个空对象
-        // 使用 Object.create(null) 可以创建一个没有原型链的对象
-        cloneTarget = Object.create(null)
-    }
+    // 7. 区分数组和普通对象
+    const cloneTarget = Array.isArray(obj) ? [] : {};
 
+    // 8. 将当前对象和它的克隆体存入 WeakMap，解决循环引用
+    hash.set(target, cloneTarget);
 
-    // 在递归拷贝其属性之前，先将 (原对象 -> 新对象) 的映射存入 hash
-    // 这样当递归遇到循环引用时，就能查到并返回已创建的新对象
-    hash.set(target, cloneTarget)
 
     // 使用 for...in 遍历所有可枚举属性（包括原型链上的）
     // 但我们通常只拷贝对象自身的属性
